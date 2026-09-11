@@ -291,7 +291,7 @@ const ingredients = [
   {id: 'cheese', name: '🧀 Extra Cheese', cost: 50, value: 1, owned: false},
   {id: 'pepperoni', name: '🍖 Pepperoni', cost: 150, value: 2, owned: false},
   {id: 'mushroom', name: '🍄 Mushrooms', cost: 300, value: 3, owned: false},
-  {id: 'olive', name: '🫒 Olives', cost: 600, value: 5, owned: false},
+  {id: 'olives', name: '🫒 Olives', cost: 600, value: 5, owned: false},
   {id: 'bacon', name: '🥓 Bacon', cost: 1200, value: 8, owned: false},
   {id: 'jalapeno', name: '🌶️ Jalapeños', cost: 2000, value: 10, owned: false},
   {id: 'garlic', name: '🧄 Garlic', cost: 3000, value: 12, owned: false},
@@ -347,7 +347,8 @@ function buyAutomation(id) {
   const auto = automation.find(a => a.id === id);
   if (!auto || Math.floor(money) < auto.cost) return;
   
-  money -= auto.cost;
+  const cost = auto.cost;
+  money -= cost;
   auto.count++;
   auto.cost = Math.floor(auto.cost * 1.15);
   cps += auto.cps;

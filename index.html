@@ -334,7 +334,7 @@ function servePizza() {
 // BUY INGREDIENT
 function buyIngredient(id) {
   const ingredient = ingredients.find(i => i.id === id);
-  if (!ingredient || ingredient.owned || money < ingredient.cost) return;
+  if (!ingredient || ingredient.owned || Math.floor(money) < ingredient.cost) return;
   
   money -= ingredient.cost;
   ingredient.owned = true;
@@ -345,7 +345,7 @@ function buyIngredient(id) {
 // BUY AUTOMATION
 function buyAutomation(id) {
   const auto = automation.find(a => a.id === id);
-  if (!auto || money < auto.cost) return;
+  if (!auto || Math.floor(money) < auto.cost) return;
   
   money -= auto.cost;
   auto.count++;
@@ -377,7 +377,7 @@ function renderUpgrades() {
         <div class="upgrade-desc">+$${ing.value} per pizza</div>
       </div>
       <button class="upgrade-btn" onclick="buyIngredient('${ing.id}')" 
-        ${ing.owned || money < ing.cost ? 'disabled' : ''}>
+        ${ing.owned || Math.floor(money) < ing.cost ? 'disabled' : ''}>
         ${ing.owned ? 'Owned' : '$' + ing.cost}
       </button>
     </div>
@@ -391,7 +391,7 @@ function renderUpgrades() {
         <div class="upgrade-desc">+${auto.cps} CPS each</div>
       </div>
       <button class="upgrade-btn" onclick="buyAutomation('${auto.id}')" 
-        ${money < auto.cost ? 'disabled' : ''}>
+        ${Math.floor(money) < auto.cost ? 'disabled' : ''}>
         $${auto.cost}
       </button>
     </div>

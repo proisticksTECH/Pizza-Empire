@@ -303,11 +303,11 @@ const ingredients = [
 
 // AUTOMATION
 const automation = [
-  {id: 'oven1', name: '🔥 Basic Oven', cost: 100, cps: 1, count: 0},
-  {id: 'oven2', name: '🔥🔥 Double Oven', cost: 500, cps: 5, count: 0},
-  {id: 'chef1', name: '👨‍🍳 Chef', cost: 1000, cps: 10, count: 0},
-  {id: 'chef2', name: '👨‍🍳👨‍🍳 Head Chef', cost: 3000, cps: 25, count: 0},
-  {id: 'restaurant', name: '🏪 Restaurant', cost: 10000, cps: 100, count: 0}
+  {id: 'oven1', name: '🔥 Basic Oven', baseCost: 100, cps: 1, count: 0},
+  {id: 'oven2', name: '🔥🔥 Double Oven', baseCost: 500, cps: 5, count: 0},
+  {id: 'chef1', name: '👨‍🍳 Chef', baseCost: 1000, cps: 10, count: 0},
+  {id: 'chef2', name: '👨‍🍳👨‍🍳 Head Chef', baseCost: 3000, cps: 25, count: 0},
+  {id: 'restaurant', name: '🏪 Restaurant', baseCost: 10000, cps: 100, count: 0}
 ];
 
 // MAKE PIZZA
@@ -342,15 +342,21 @@ function buyIngredient(id) {
   updateUI();
 }
 
+// GET AUTOMATION COST
+function getAutomationCost(auto) {
+  return Math.floor(auto.baseCost * Math.pow(1.12, auto.count));
+}
+
 // BUY AUTOMATION
 function buyAutomation(id) {
   const auto = automation.find(a => a.id === id);
-  if (!auto || Math.floor(money) < auto.cost) return;
+  if (!auto) return;
   
-  const cost = auto.cost;
+  const cost = getAutomationCost(auto);
+  if (Math.floor(money) < cost) return;
+  
   money -= cost;
   auto.count++;
-  auto.cost = Math.floor(auto.cost * 1.15);
   cps += auto.cps;
   updateUI();
 }
@@ -385,18 +391,20 @@ function renderUpgrades() {
   `).join('');
   
   const autoDiv = document.getElementById('automationUpgrades');
-  autoDiv.innerHTML = automation.map(auto => `
+  autoDiv.innerHTML = automation.map(auto => {
+    const cost = getAutomationCost(auto);
+    return `
     <div class="upgrade-item">
       <div class="upgrade-info">
         <div class="upgrade-name">${auto.name} (${auto.count})</div>
         <div class="upgrade-desc">+${auto.cps} CPS each</div>
       </div>
       <button class="upgrade-btn" onclick="buyAutomation('${auto.id}')" 
-        ${Math.floor(money) < auto.cost ? 'disabled' : ''}>
-        $${auto.cost}
+        ${Math.floor(money) < cost ? 'disabled' : ''}>
+        $${cost}
       </button>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // CPS LOOP

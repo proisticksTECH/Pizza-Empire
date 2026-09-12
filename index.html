@@ -46,6 +46,28 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
 
+    .sound-toggle {
+      background: #9b59b6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .sound-toggle:hover {
+      background: #8e44ad;
+    }
+
+    .sound-toggle.off {
+      background: #7f8c8d;
+    }
+
     .info-toggle {
       background: #3498db;
       color: white;
@@ -243,6 +265,7 @@
   
   <div class="game-area">
     <div class="stats" id="statsPanel">
+      <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊 Sound ON</button>
       <div class="stat-item money">💰 $<span id="money">0</span></div>
       <button class="info-toggle" onclick="toggleStats()">ℹ️ INFO</button>
       <div id="statsContent" class="">
@@ -285,6 +308,10 @@ let money = 0;
 let pizzas = 0;
 let pizzaValue = 1;
 let cps = 0;
+let soundEnabled = true;
+
+// Audio Context
+let audioContext;
 
 // INGREDIENTS
 const ingredients = [
@@ -310,9 +337,72 @@ const automation = [
   {id: 'restaurant', name: '🏪 Restaurant', baseCost: 10000, cps: 100, count: 0}
 ];
 
+// SOUND EFFECTS
+function playSound(frequency, duration, type = 'sine') {
+  if (!soundEnabled) return;
+  
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  
+  const now = audioContext.currentTime;
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  
+  osc.type = type;
+  osc.frequency.value = frequency;
+  gain.gain.setValueAtTime(0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+  
+  osc.start(now);
+  osc.stop(now + duration);
+}
+
+function soundPop() {
+  // "POP!" sound - quick burst with frequency drop
+  if (!soundEnabled) return;
+  
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  
+  const now = audioContext.currentTime;
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800, now);
+  osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
+  
+  gain.gain.setValueAtTime(0.2, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+  
+  osc.start(now);
+  osc.stop(now + 0.08);
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundToggle');
+  if (soundEnabled) {
+    btn.textContent = '🔊 Sound ON';
+    btn.classList.remove('off');
+  } else {
+    btn.textContent = '🔇 Sound OFF';
+    btn.classList.add('off');
+  }
+}
+
 // MAKE PIZZA
 function makePizza() {
   pizzas++;
+  soundPop();
   updateUI();
 }
 
@@ -320,6 +410,7 @@ function makePizza() {
 function toggleStats() {
   const statsContent = document.getElementById('statsContent');
   statsContent.classList.toggle('hidden');
+  soundPop();
 }
 
 // SERVE PIZZA
@@ -328,6 +419,7 @@ function servePizza() {
   
   money += pizzaValue;
   pizzas--;
+  soundPop();
   updateUI();
 }
 
@@ -339,6 +431,7 @@ function buyIngredient(id) {
   money -= ingredient.cost;
   ingredient.owned = true;
   pizzaValue += ingredient.value;
+  soundPop();
   updateUI();
 }
 
@@ -358,6 +451,7 @@ function buyAutomation(id) {
   money -= cost;
   auto.count++;
   cps += auto.cps;
+  soundPop();
   updateUI();
 }
 
